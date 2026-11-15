@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const products = [
   { id: 1, name: 'Pistachio', price: 4.5 },
@@ -21,7 +21,16 @@ function decrease(line) {
   if (line.qty <= 0) cart.splice(cart.indexOf(line), 1)
 }
 
-const total = computed(() => cart.reduce((sum, l) => sum + l.price * l.qty, 0))
+const subtotal = computed(() => cart.reduce((sum, l) => sum + l.price * l.qty, 0))
+
+const code = ref('')
+const discount = ref(0)
+
+function applyCode() {
+  if (code.value.trim().toUpperCase() === 'GELATO10') discount.value += 10
+}
+
+const total = computed(() => subtotal.value - discount.value)
 const money = (n) => '$' + n.toFixed(2)
 </script>
 
@@ -54,6 +63,11 @@ const money = (n) => '$' + n.toFixed(2)
           <span>{{ money(l.price * l.qty) }}</span>
         </li>
       </ul>
+      <form class="discount" @submit.prevent="applyCode">
+        <input v-model="code" placeholder="Discount code" aria-label="Discount code" />
+        <button type="submit">Apply</button>
+        <span v-if="discount" class="note">Discount {{ money(discount) }}</span>
+      </form>
       <p class="total">Total <b data-testid="total">{{ money(total) }}</b></p>
     </section>
   </main>
